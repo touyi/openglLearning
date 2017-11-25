@@ -97,6 +97,6 @@ void main()
 	vec3 normal = normalize(Normal);
 	vec3 result;
 	
-	result = CalSpotLight(spotLight,normal,viewDir)+CalDirLight(dirlight,normal,viewDir)*2;
+	result = vec3(texture(material.diffuse,TexCoord));
 	color = vec4(result,1.0f);
 }

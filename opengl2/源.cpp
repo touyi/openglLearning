@@ -196,78 +196,27 @@ int main()
 	glBindVertexArray(0);
 
 	CMCamera camera;
-	glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
-	glm::vec3 color(1.0f, 0.5f, 0.31f);
 	glm::mat4 projection, view;
-	CGLFactory::ShaderPtr cubeptrshader = CGLFactory::CreatShader("cubevshader.txt", "cubefshader.txt");
-	CGLFactory::LightPtr plight = CGLFactory::CreatDirctionLight(
-		glm::vec3(0.2f, 0.2f, 0.2f),
-		glm::vec3(0.5f, 0.5f, 0.5f),
-		glm::vec3(1.0f, 1.0f, 1.0f),
-		glm::vec3(0, 0, -1));
-	CGLFactory::LightPtr spotLight = CGLFactory::CreatSpotLight(
-		camera.GetFront(),
-		glm::cos(glm::radians(12.5f)),
-		glm::cos(glm::radians(15.0f)),
-		glm::vec3(0.2f, 0.2f, 0.2f),
-		glm::vec3(0.5f, 0.5f, 0.5f),
-		glm::vec3(1.0f, 1.0f, 1.0f)
-	);
-	cubeptrshader->use();
-	cubeptrshader->SetInt("material.diffuse", 0);
-	cubeptrshader->SetInt("material.specTex", 1);
-	cubeptrshader->SetVec3("objectcolor", color);
-	cubeptrshader->SetFloat("material.shininess", 256.0);
-	cubeptrshader->SetTexture(0, "res/container2.png");
-	cubeptrshader->SetTexture(1, "res/container2_specular.png");
-	auto lightptrShader = CGLFactory::CreatShader("cubevshader.txt", "lightfshader.txt");
+	auto cubeshader = CGLFactory::CreatShader("cubevshader.txt", "cubefshader.txt");
+	cubeshader->SetTexture(0, "./res/container2.png");
 	glEnable(GL_DEPTH_TEST);
-
+	projection = glm::perspective(glm::radians(45.0f), width*1.0f / height, 0.1f, 100.0f);
 	while (!glfwWindowShouldClose(window))
 	{
 		glClearColor(0.5, 0.5, 0.5, 0.5);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
 		doMovement(camera, deltatime);
 		glfwPollEvents();
-		
-		
-		projection = glm::perspective(glm::radians(45.0f), (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
 		view = camera.GetViewMatrix();
-		float co = cos(glfwGetTime());
-		float si = sin(glfwGetTime());
-		lightPos.x = si * 5;
-		lightPos.z = co * 5;
-		cubeptrshader->use();
-		spotLight->SetVec3(lightPos, "position");
-		spotLight->SetVec3(glm::vec3(0,0,-1), "SpotDir");
-		cubeptrshader->SetMat4("projection", projection);
-		cubeptrshader->SetMat4("view", view);
-		cubeptrshader->SetVec3("viewPos", camera.GetPositon());
+		cubeshader->SetMat4("projection", projection);
+		cubeshader->SetMat4("view", view);
+		glm::mat4 model;
+		cubeshader->SetMat4("model", model);
 		glBindVertexArray(cubeVAO);
-		for (int i = 0; i < 10; i++)
-		{
-			glm::mat4 model;
-			model = glm::translate(model, cubePositions[i]);
-			model = glm::rotate(model, glm::radians(40.0f), cubePositions[i]);
-			glm::mat3 normodel = glm::mat3(glm::transpose(glm::inverse(model)));
-			cubeptrshader->SetMat4("model", model);
-			cubeptrshader->SetMat3("normodel", normodel);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-		glBindVertexArray(0);
-
-
-		// µã¹âÔ´
-		glm::mat4 lightmodel;
-		lightptrShader->use();
-		
-		lightmodel = glm::translate(lightmodel, lightPos);
-		lightptrShader->SetMat4("projection", projection);
-		lightptrShader->SetMat4("view", view);
-		lightptrShader->SetMat4("model", lightmodel);
-		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
+		glBindVertexArray(cubeVAO);
+		
 
 		CGLFactory::Update();
 
