@@ -7,6 +7,7 @@ void CMCamera::Move(glm::vec3 dis)
 	glm::vec3 right = glm::normalize(glm::cross(cameraUp, cameraFront));
 	cameraPos += right*dis.x;
 	cameraPos += glm::normalize(cameraFront)*dis.z;
+	cameraPos += glm::normalize(cameraUp)*dis.y;
 
 }
 

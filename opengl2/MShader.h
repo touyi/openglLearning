@@ -1,9 +1,11 @@
 #pragma once
 #include<string>
+#include<SOIL\SOIL.h>
 #include <GL\glew.h>
 #include<GLM\glm.hpp>
 #include<GLM\gtc\matrix_transform.hpp>
 #include<GLM\gtc\type_ptr.hpp>
+#include<map>
 class CMShader
 {
 public:
@@ -54,17 +56,28 @@ public:
 	{
 		glUniform1i(GetUniformLocation(name), value);
 	}
-	void SetTexture(GLint textureNo, std::string path)
+	void SetTexture(GLint textureNo, std::string path,int type = SOIL_LOAD_RGBA)
 	{
 		glActiveTexture(GL_TEXTURE0 + textureNo);
-		glBindTexture(GL_TEXTURE_2D, LoadTexture(path.c_str()));
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		auto it = textureMap.find(path);
+		if (it != textureMap.end())
+		{
+			glBindTexture(GL_TEXTURE_2D, it->second);
+		}
+		else
+		{
+			GLuint id = LoadTexture(path.c_str(), type);
+			textureMap[path] = id;
+			glBindTexture(GL_TEXTURE_2D, id);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
 	}
 
 private:
-	unsigned int LoadTexture(const char*);
+	unsigned int LoadTexture(const char*, int);
 	bool iserror = false;
 	GLuint m_program;
+	std::map<std::string, GLuint>textureMap;
 };
 

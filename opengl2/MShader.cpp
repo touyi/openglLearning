@@ -2,7 +2,6 @@
 #include<fstream>
 #include<iostream>
 #include<sstream>
-#include<SOIL\SOIL.h>
 using std::fstream;
 using std::stringstream;
 
@@ -89,16 +88,28 @@ CMShader::~CMShader()
 {
 }
 
-unsigned int CMShader::LoadTexture(const char* path)
+unsigned int CMShader::LoadTexture(const char* path,int LoadType)
 {
-		int width, height, nrChannels;
-		unsigned char *data = SOIL_load_image(path, &width, &height, 0, SOIL_LOAD_RGB);//stbi_load(path, &width, &height, &nrChannels, 0);
-		GLuint texture;
-		glGenTextures(1, &texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		SOIL_free_image_data(data);
-		//stbi_image_free(data);
-		return texture;
+	int type;
+	switch (LoadType)
+	{
+	case SOIL_LOAD_RGB:
+		type = GL_RGB;
+		break;
+	case SOIL_LOAD_RGBA:
+		type = GL_RGBA;
+		break;
+	default:
+		type = GL_RGB;
+		break;
+	}
+	int width, height, nrChannels;
+	unsigned char *data = SOIL_load_image(path, &width, &height, 0, LoadType);//stbi_load(path, &width, &height, &nrChannels, 0);
+	GLuint texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, type, width, height, 0, type, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	SOIL_free_image_data(data);
+	return texture;
 }
