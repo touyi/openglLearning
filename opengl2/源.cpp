@@ -171,6 +171,43 @@ glm::vec3 cubePositions[] = {
    glm::vec3(0.0f,  0.0f,  0.0f),
    glm::vec3(0.0f,0.0f,-5.0f),
 };
+float quadVertices[] = {
+	// positions   // texCoords
+	-1.0f,  1.0f,  0.0f, 1.0f,
+	-1.0f, -1.0f,  0.0f, 0.0f,
+	1.0f, -1.0f,  1.0f, 0.0f,
+
+	-1.0f,  1.0f,  0.0f, 1.0f,
+	1.0f, -1.0f,  1.0f, 0.0f,
+	1.0f,  1.0f,  1.0f, 1.0f
+};
+GLuint GenSkyBox()
+{
+	GLuint tex;
+	glGenTextures(1, &tex);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
+	char *paths[7] = {
+		"res/skybox/right.jpg",
+		"res/skybox/left.jpg",
+		"res/skybox/top.jpg",
+		"res/skybox/bottom.jpg",
+		"res/skybox/back.jpg",
+		"res/skybox/front.jpg"
+	};
+	for (int i = GL_TEXTURE_CUBE_MAP_POSITIVE_X; i < GL_TEXTURE_CUBE_MAP_POSITIVE_X + 6; i++)
+	{
+		int w, h,channels;
+		unsigned char* data = SOIL_load_image(paths[i- GL_TEXTURE_CUBE_MAP_POSITIVE_X], &w, &h, &channels, SOIL_LOAD_RGB);
+		glTexImage2D(i, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		SOIL_free_image_data(data);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	return tex;
+}
 int main()
 {
 	
@@ -180,93 +217,73 @@ int main()
 	glfwGetFramebufferSize(window, &width, &height);
 	glViewport(0, 0, width, height);
 
+
+	GLuint SkyVAO, SkyVBO;
+	glGenVertexArrays(1,&SkyVAO);
+	glGenBuffers(1,&SkyVBO);
+	glBindVertexArray(SkyVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, SkyVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), 0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	GLuint cubeVAO, cubeVBO;
+	glGenVertexArrays(1, &cubeVAO);
+	glGenBuffers(1, &cubeVBO);
+	glBindVertexArray(cubeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLfloat*)(3 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+
 	GLfloat lasttime = glfwGetTime();
 	GLfloat deltatime = 0;
-	GLuint glassVBO, glassVAO;
-	glGenVertexArrays(1, &glassVAO);
-	glGenBuffers(1, &glassVBO);
-	glBindVertexArray(glassVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, glassVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Planes), Planes, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), NULL);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(2);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	GLuint VBO,cubeVAO;
-	glGenVertexArrays(1, &cubeVAO);
-	glGenBuffers(1, &VBO);
-	glBindVertexArray(cubeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), NULL);
-	// glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-	GLuint lightVAO;
-	glGenVertexArrays(1, &lightVAO);
-	glBindVertexArray(lightVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), NULL);
-	glEnableVertexAttribArray(0);
-	glBindVertexArray(0);
-
 	CMCamera camera;
 	glm::mat4 projection, view;
-	auto cubeshader = CGLFactory::CreatShader("cubevshader.txt", "cubefshader.txt");
-
-	auto redShader = CGLFactory::CreatShader("cubevshader.txt", "redcolorshader.txt");
-	
 	
 	
 	projection = glm::perspective(glm::radians(45.0f), width*1.0f / height, 0.1f, 100.0f);
+	auto shader = CGLFactory::CreatShader("vframe.txt", "fframe.txt");
+	auto cubeshader = CGLFactory::CreatShader("cubevshader.txt", "cubefshader.txt");
+	GLuint tex = GenSkyBox();
+	
 	while (!glfwWindowShouldClose(window))
 	{
-		glClearColor(0.5, 0.5, 0.5, 0.5);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		doMovement(camera, deltatime);
-		glfwPollEvents();
-		view = camera.GetViewMatrix();
-		cubeshader->use();
-		cubeshader->SetMat4("projection", projection);
-		cubeshader->SetMat4("view", view);
-		glm::mat4 model1;
-		glm::mat4 model2;
 		glEnable(GL_DEPTH_TEST);
-		glBindVertexArray(cubeVAO);
-		glEnable(GL_CULL_FACE);
-		cubeshader->SetTexture(0, "./res/container2.png");
-		model1 = glm::scale(model1, glm::vec3(5, 5, 5));
-		model1 = glm::translate(model1, glm::vec3(0.0f, -0.5f, 0.0f));
-		cubeshader->SetMat4("model", model1);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		glBindVertexArray(glassVAO);
-		glDisable(GL_CULL_FACE);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		cubeshader->SetTexture(0, "./res/blending_transparent_window.png",SOIL_LOAD_RGBA);
-		model2 = glm::translate(model2, glm::vec3(0, 0.5, 0));
-		cubeshader->SetMat4("model", model2);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glClearColor(0.5, 0.5, 0.5, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glfwPollEvents();
+		doMovement(camera,deltatime);
+		shader->use();
 		
-		model2 = glm::translate(model2, glm::vec3(0, 0, 0.5));
-		cubeshader->SetMat4("model", model2);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+		shader->SetMat4("projection", projection);
+		shader->SetMat4("view", view);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
+		glDepthMask(GL_FALSE);
+		glBindVertexArray(SkyVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 
-		CGLFactory::Update();
+		glDepthMask(GL_TRUE);
 
+		cubeshader->use();
+		cubeshader->SetTexture(0, "res/container2.png");
+		cubeshader->SetMat4("projection", projection);
+		cubeshader->SetMat4("view", camera.GetViewMatrix());
+		glm::mat4 model;
+		cubeshader->SetMat4("model", model);
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+		CGLFactory::Update();
 		deltatime = glfwGetTime() - lasttime;
 		lasttime = glfwGetTime();
 		glfwSwapBuffers(window);
