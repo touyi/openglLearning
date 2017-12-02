@@ -9,7 +9,7 @@
 class CMShader
 {
 public:
-	CMShader(std::string vshaderpath,std::string fshaderpath);
+	CMShader(std::string vshaderpath,std::string fshaderpath,std::string gshaderpath = "");
 	~CMShader();
 	void use()
 	{
@@ -73,7 +73,7 @@ public:
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		}
 	}
-
+	void LoadGeometryShader(const char* path);
 private:
 	unsigned int LoadTexture(const char*, int);
 	bool iserror = false;

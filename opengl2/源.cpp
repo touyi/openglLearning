@@ -236,9 +236,7 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLfloat*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
@@ -250,9 +248,8 @@ int main()
 	
 	
 	projection = glm::perspective(glm::radians(45.0f), width*1.0f / height, 0.1f, 100.0f);
-	auto shader = CGLFactory::CreatShader("vframe.txt", "fframe.txt");
-	auto cubeshader = CGLFactory::CreatShader("cubevshader.txt", "cubefshader.txt");
-	GLuint tex = GenSkyBox();
+	auto shader = CGLFactory::CreatShader("vframe.txt", "fframe.txt","gshader.txt");
+	//GLuint tex = GenSkyBox();
 	
 	while (!glfwWindowShouldClose(window))
 	{
@@ -261,27 +258,14 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glfwPollEvents();
 		doMovement(camera,deltatime);
-		shader->use();
-		
-		view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
-		shader->SetMat4("projection", projection);
-		shader->SetMat4("view", view);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
-		glDepthMask(GL_FALSE);
-		glBindVertexArray(SkyVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-
-		glDepthMask(GL_TRUE);
-
-		cubeshader->use();
-		cubeshader->SetTexture(0, "res/container2.png");
-		cubeshader->SetMat4("projection", projection);
-		cubeshader->SetMat4("view", camera.GetViewMatrix());
 		glm::mat4 model;
-		cubeshader->SetMat4("model", model);
+		shader->use();
+		glEnable(GL_PROGRAM_POINT_SIZE);
+		shader->SetMat4("projection", projection);
+		shader->SetMat4("view", camera.GetViewMatrix());
+		shader->SetMat4("model", model);
 		glBindVertexArray(cubeVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(GL_POINTS, 0, 3);
 		glBindVertexArray(0);
 		CGLFactory::Update();
 		deltatime = glfwGetTime() - lasttime;

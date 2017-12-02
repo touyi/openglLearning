@@ -42,9 +42,9 @@ void CGLFactory::Update()
 	callBackFuns.clear();
 }
 
-CGLFactory::ShaderPtr CGLFactory::CreatShader(std::string vpath, std::string fpath)
+CGLFactory::ShaderPtr CGLFactory::CreatShader(std::string vpath, std::string fpath,std::string gpath)
 {
-	ShaderPtr sp = ShaderPtr(new CMShader(vpath, fpath));
+	ShaderPtr sp = ShaderPtr(new CMShader(vpath, fpath, gpath));
 	ShaderList.push_back(sp);
 	return sp;
 }

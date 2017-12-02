@@ -25,7 +25,7 @@ public:
 	static void AddCallFunction(std::function<void(ShaderPtr)>fun);
 	static void Update(); // 更新光源
 	// shader
-	static ShaderPtr CreatShader(std::string vpath, std::string fpath);
+	static ShaderPtr CreatShader(std::string vpath, std::string fpath,std::string gpath="");
 	
 	// 光源
 	static LightPtr CreatPointLight(glm::vec3 amb, glm::vec3 diff, glm::vec3 spec, float constant, float linear, float quadratic);

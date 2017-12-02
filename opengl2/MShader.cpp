@@ -7,7 +7,7 @@ using std::stringstream;
 
 
 
-CMShader::CMShader(std::string vshaderpath, std::string fshaderpath)
+CMShader::CMShader(std::string vshaderpath, std::string fshaderpath,std::string gshaderpath)
 {
 	fstream vfile;
 	fstream sfile;
@@ -56,7 +56,8 @@ CMShader::CMShader(std::string vshaderpath, std::string fshaderpath)
 		}
 
 		m_program = glCreateProgram();
-
+		if(gshaderpath!="")
+			LoadGeometryShader(gshaderpath.c_str());
 		glAttachShader(m_program, vshader);
 		glAttachShader(m_program, fshader);
 		glLinkProgram(m_program);
@@ -86,6 +87,41 @@ CMShader::CMShader(std::string vshaderpath, std::string fshaderpath)
 
 CMShader::~CMShader()
 {
+}
+
+void CMShader::LoadGeometryShader(const char * path)
+{
+	fstream gfile;
+	gfile.exceptions(std::ifstream::badbit);
+	try
+	{
+		gfile.open(path);
+		stringstream gstr;
+		gstr << gfile.rdbuf();
+		GLuint gshader = glCreateShader(GL_GEOMETRY_SHADER);
+		std::string str = gstr.str();
+		const GLchar* code = str.c_str();
+		glShaderSource(gshader, 1, &code, NULL);
+		glCompileShader(gshader);
+		GLint success = 0;
+		glGetShaderiv(gshader, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			GLchar infolog[512];
+			glGetShaderInfoLog(gshader, 512, NULL, infolog);
+			//std::cout << infolog << std::endl;
+			throw std::exception(infolog);
+		}
+		glAttachShader(m_program, gshader);
+		glDeleteShader(gshader);
+	}
+	catch (const std::exception& inf)
+	{
+		iserror = true;
+		std::cout << inf.what() << std::endl;
+		system("pause");
+		exit(1);
+	}
 }
 
 unsigned int CMShader::LoadTexture(const char* path,int LoadType)
